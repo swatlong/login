@@ -1,7 +1,10 @@
 from django.db import models
-import re
-import bcrypt
+import re,bcrypt
+
+from django.db.models.base import Model
+
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
+
 class UserManager(models.Manager):
     def validate(self, form):
         errors = {}
@@ -49,5 +52,24 @@ class User(models.Model):
     last_name = models.CharField(max_length=45)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = UserManager()
+
+class Post(models.Model):
+    content = models.CharField(max_length=255)
+    posted_by = models.ForeignKey(User, related_name='user_posts', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user_likes = models.ManyToManyField(User, related_name='like_post')
+    comment_likes = models.ManyToManyField(User, related_name='like_comment')
+
+class Comment(models.Model):
+    comment = models.CharField(max_length=255)
+    user = models.ForeignKey(User, related_name='comments', on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+

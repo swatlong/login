@@ -1,0 +1,64 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Registration</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <h1>Success! Welcome, {{ user.first_name }} {{ user.last_name }}!</h1>
+
+    <ul class="messages">
+        {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="/logout">Log Out</a>
+
+    <h1>What's on your mind?</h1>
+
+    <form action="/post" method="POST">
+    {% csrf_token %}
+    <textarea class="form-control" name="content" rows="3"></textarea>
+    <button class="btn btn-primary">Post</button>
+    </form>
+
+    <div class="container">
+        <div class="col">
+            {% for post in posts reversed %}
+            <div class="post">
+                <div class="bg-light">
+                    <p> {{ post.content }}</p>
+                    posted by {{ post.posted_by.first_name }}
+                    <a href="/remove-post/{{post.id}}">Delete</a>
+                    <a href="/like/{{post.id}}">Like Post</a>
+                    <p>{{ post.user_likes.count }}</p>
+                </div>
+                <div class="comment">
+                    <form action="/post-comment/{{ post.id }}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Add Comment</label>
+                        <input type="text" name="comment" class="form-control">
+                    </div>
+                    <button class="btn btn-primary">Comment</button>
+                    </form>
+
+                    {% for comment in post.comments.all reversed %}
+
+                    {{ comment.comment }}, comment by: {{ comment.user.first_name }} 
+                    <a href="/delete/{{comment.id}}">Delete</a>
+                    <a href="/like-comment/{{post.id}}">Like Comment</a>
+                    <p>{{ post.comment_likes.count }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+</html>
