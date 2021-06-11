@@ -18,5 +18,4 @@ urlpatterns = [
     path('post_food',views.post_food),
     path('food/<int:food>/edit', views.edit),
     path('food/<int:food>/update', views.update),
-    path('shows/<int:show_id>/delete', views.delete),
 ]

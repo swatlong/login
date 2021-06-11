@@ -4,17 +4,10 @@ from .models import *
 import re, bcrypt
 
 # Create your views here.
-def index(request):
-    return render(request, 'index.html')
 
-# def success(request):
-#     if 'user_id' not in request.session:
-#         return redirect('/')
-#     user = User.objects.get(id=request.session['user_id'])
-#     context = {
-#         'user': user
-#     }
-#     return render(request, 'success.html', context)
+# beginning of login/register page
+def index(request):
+    return render(request, 'login.html')
 
 def register(request):
     if request.method == "GET":
@@ -43,11 +36,6 @@ def register(request):
 
     request.session['user_id'] = new_user.id
     return redirect("/home")
-    # else:
-        # new_user = User.objects.register(request.POST)
-        # request.session['user_id'] = new_user.id
-        # messages.success(request, "You have successfully registered!")
-        # return redirect('/success')
 
 def login(request):
     if request.method == "GET":
@@ -60,92 +48,17 @@ def login(request):
         messages.error(request, 'Invalid Email/Password')
         return redirect('/')
 
-    # if not User.objects.authenticate(request.POST['email'], request.POST['password']):
-    #     messages.error(request, 'Invalid Email/Password')
-    #     return redirect('/')
-
     user = User.objects.get(email=email)
     request.session['user_id'] = user.id
     return redirect("/home")
 
-    # user = User.objects.get(email=request.POST['email'])
-    # request.session['user_id'] = user.id
-    # messages.success(request, "You have successfully logged in!")
-    # return redirect('/success')
-
 def logout(request):
     request.session.clear()
-    #deletes request.session['user_id'] = user.id
     return redirect('/')
+# end of login/register page
+# ---------------------------------------------------------------------------------
 
-
-
-def food(request):
-    if 'user_id' not in request.session:
-        messages.error(request,'Please Login')
-        return redirect('/')
-
-    user = User.objects.get(id=request.session['user_id'])
-    foods = Food.objects.all()
-    print(foods)
-    context = {
-        'user':user,
-        'foods':foods
-    }
-    return render(request,'food.html',context)
-
-def create_food(request):
-    Food.objects.create(
-        origin_food = request.POST['origin_food'],
-        appetizer = request.POST['appetizer'],
-        main_course = request.POST['main_course'],
-        dessert = request.POST['dessert']
-    )
-    return redirect('/home')
-
-def post_food(request,food_id):
-    user = User.objects.get(id=request.session['user_id'])
-    food = Food.objects.get(id=food_id)
-    Comment.objects.create(
-        comment = request.POST['comment'],
-        user = user,
-        food = food
-    )
-    print(Comment.objects.last().__dict__)
-    return redirect('/home')
-
-def edit(request, food_id):
-
-    food_id = Food.objects.get(id=food_id)
-    context = {
-        'food': food_id
-    }
-    return render(request, 'food.html', context)
-
-def update(request, food_id):
-        # CREATE THE SHOW
-    errors = Food.objects.validate(request.POST)
-    if errors:
-        for (key, value) in errors.items():
-            messages.error(request, value)
-        return redirect(f'/shows/{food_id}/edit')
-    # update show!
-    to_update = Food.objects.get(id=food_id)
-    # updates each field
-    to_update.origin_food = request.POST['origin_food']
-    to_update.appetizer = request.POST['appetizer']
-    to_update.main_course = request.POST['main_course']
-    to_update.dessert = request.POST['dessert']
-    to_update.save()
-
-    return redirect('/home')
-
-def delete(request, food_id):
-    # NOTE: Delete one show!
-    to_delete = Food.objects.get(id=food_id)
-    to_delete.delete()
-    return redirect('/home')
-
+# start of home page
 def home(request):
     if 'user_id' not in request.session:
         messages.error(request,'Please Login')
@@ -160,6 +73,7 @@ def home(request):
     }
     return render(request, "home.html", context)
 
+# create post
 def create_post(request):
     posted_by = User.objects.get(id=request.session['user_id'])
     Post.objects.create(
@@ -181,25 +95,93 @@ def post_comment(request, post_id):
     print(Comment.objects.last().__dict__)
     return redirect("/home")
 
+# adds like 
 def add_like(request,id):
     liked_message = Post.objects.get(id=id)
     user_liking = User.objects.get(id=request.session['user_id'])
     liked_message.user_likes.add(user_liking)
     return redirect("/home")
 
+# adds like to comment
 def like(request,id):
     liked_comment = Post.objects.get(id=id)
     comment_liking = User.objects.get(id=request.session['user_id'])
     liked_comment.comment_likes.add(comment_liking)
     return redirect("/home")
 
+# deletes comment
 def delete_comment(request,id):
     destroyed = Comment.objects.get(id=id)
     destroyed.delete()
     return redirect('/home')
 
+# deletes post
 def delete_post(request,id):
     remove = Post.objects.get(id=id)
     remove.delete()
     return redirect('/home')
+
+# end of home page
+# ----------------------------------------------------------------------------------------
+
+def food(request):
+    if 'user_id' not in request.session:
+        messages.error(request,'Please Login')
+        return redirect('/')
+
+    user = User.objects.get(id=request.session['user_id'])
+    foods = Food.objects.all()
+    print(foods)
+    context = {
+        'user':user,
+        'foods':foods
+    }
+    return render(request,'food.html',context)
+
+# create food
+def create_food(request):
+    Food.objects.create(
+        origin_food = request.POST['origin_food'],
+        appetizer = request.POST['appetizer'],
+        main_course = request.POST['main_course'],
+        dessert = request.POST['dessert']
+    )
+    return redirect('/home')
+
+# post food on home page
+def post_food(request,food_id):
+    user = User.objects.get(id=request.session['user_id'])
+    foods = Food.objects.get(id=food_id)
+    Food.objects.create(
+        foods = request.POST['foods'],
+        user = user,
+        food = foods
+    )
+    print(Food.objects.last().__dict__)
+    return redirect('/home')
+
+# edit food
+def edit(request, food_id):
+    food_id = Food.objects.get(id=food_id)
+    context = {
+        'food': food_id
+    }
+    return render(request, 'food.html', context)
+
+# update food
+def update(request, food_id):
+    errors = Food.objects.validate(request.POST)
+    if errors:
+        for (key, value) in errors.items():
+            messages.error(request, value)
+        return redirect(f'/food/{food_id}/edit')
+    to_update = Food.objects.get(id=food_id)
+    to_update.origin_food = request.POST['origin_food']
+    to_update.appetizer = request.POST['appetizer']
+    to_update.main_course = request.POST['main_course']
+    to_update.dessert = request.POST['dessert']
+    to_update.save()
+
+    return redirect('/home')
+
 
