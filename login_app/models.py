@@ -1,6 +1,5 @@
 from django.db import models
 import re,bcrypt
-
 from django.db.models.base import Model
 
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
@@ -71,5 +70,13 @@ class Comment(models.Model):
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
+class Food(models.Model):
+    origin_food = models.CharField(max_length=255)
+    appetizer = models.CharField(max_length=255)
+    main_course = models.CharField(max_length=255)
+    dessert = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    food = models.ManyToManyField(User, related_name='food')
 
